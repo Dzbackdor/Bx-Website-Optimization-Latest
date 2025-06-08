@@ -40,7 +40,7 @@ def banner():
 {R} | __ \\__  \ _/ ___\|  |/ /  | |  |/    \|  |/ /
 {R} | \_\ \/ __ \\  \___|    <|  |_|  |   |  \    < 
 {R} |___  (____  /\___  >__|_ \____/__|___|  /__|_ \
-{R}     \/     \/     \/     \/            \/     \/{W}v2.0.0{W} [{G}Latest{W}]
+{R}     \/     \/     \/     \/            \/     \/
 {G}════════════ {W}SEO Website Optimization {G}════════════
 """)
 
@@ -1312,10 +1312,6 @@ class BacklinkBot:
             self.logger.error(f"❌ Error saat memproses {url}: {str(e)}")
             return False
 
-
-
-
-
     def wait_for_page_load(self, timeout: int = 30):
         """Smart waiting untuk halaman selesai loading"""
         try:
@@ -1713,7 +1709,7 @@ class BacklinkBot:
 
 
     def run(self, urls: List[str]):
-        """Jalankan bot dengan output yang disederhanakan"""
+        """Jalankan bot dengan real-time incremental saving"""
         if not urls:
             self.logger.error(f"❌ Tidak ada URL untuk diproses")
             return
@@ -1725,14 +1721,15 @@ class BacklinkBot:
             
             self.logger.info(f"🚀 Memulai proses untuk {G}{len(urls)} {W}URL")
             self.logger.info(f"📝 Total {G}{len(self.comments_list)} {W}komentar tersedia")
+            self.logger.info(f"💾 {G}Real-time incremental saving aktif{W}")
             self.logger.info(f"{G}{'─' *60}")
             
-            success_urls = []
-            failed_urls = []
-            no_template_urls = []
+            # ✅ COUNTER UNTUK STATISTIK AKHIR
+            success_count = 0
+            failed_count = 0
+            no_template_count = 0
             
             for i, url in enumerate(urls, 1):
-                # ✅ GABUNGKAN PROGRESS DENGAN TEMPLATE DETECTION
                 current_template = None
                 
                 try:
@@ -1740,7 +1737,6 @@ class BacklinkBot:
                     self.driver.get(url)
                     time.sleep(random.uniform(3, 6))
                     
-                    # ✅ PROGRESS + TEMPLATE DETECTION DALAM SATU LOG
                     self.logger.info(f"📊 Progress: {G}{i}{W}/{G}{len(urls)} {W}- {Y}{url}")
                     
                     # Deteksi template (SILENT)
@@ -1748,10 +1744,15 @@ class BacklinkBot:
                     
                     if not template_name:
                         self.logger.info(f"🔍 Sedang memilih template : ❌ Tidak ada template yang cocok")
-                        no_template_urls.append(url)
+                        
+                        # ✅ SAVE LANGSUNG
+                        self.save_results_with_url_tracking({
+                            'status': 'no_template',
+                            'url': url
+                        })
+                        no_template_count += 1
                         continue
                     
-                    # ✅ GABUNGKAN LOG TEMPLATE RESULT
                     self.logger.info(f"🔍 Sedang memilih template : Menggunakan template {G}{template_name}{W}")
                     
                     current_template = template_name
@@ -1760,7 +1761,13 @@ class BacklinkBot:
                     template = self.load_template(template_name)
                     if not template or 'actions' not in template:
                         self.logger.error(f"❌ Gagal load template {template_name}")
-                        failed_urls.append(url)
+                        
+                        # ✅ SAVE LANGSUNG
+                        self.save_results_with_url_tracking({
+                            'status': 'failed',
+                            'url': url
+                        })
+                        failed_count += 1
                         continue
                     
                     # Siapkan comment data
@@ -1793,31 +1800,49 @@ class BacklinkBot:
                         final_url = self.driver.current_url
                     
                     if success:
-                        success_urls.append({
+                        success_data = {
                             'original_url': url,
                             'final_url': final_url,
                             'timestamp': datetime.datetime.now().isoformat(),
                             'comment': comment_data['comment'][:100] + '...' if len(comment_data['comment']) > 100 else comment_data['comment'],
                             'detection_method': 'simplified_detection'
+                        }
+                        
+                        # ✅ SAVE LANGSUNG
+                        self.save_results_with_url_tracking({
+                            'status': 'success',
+                            'url': url,
+                            'final_url': final_url,
+                            'detail': success_data
                         })
+                        success_count += 1
+                        
                         self.logger.info(f"✅ {G}Berhasil posting komentar")
                         self.logger.info(f"{G}{'─' *60}")
                     else:
-                        failed_urls.append(url)
-                        # self.logger.error(f"❌ {R}Gagal posting komentar")
+                        # ✅ SAVE LANGSUNG
+                        self.save_results_with_url_tracking({
+                            'status': 'failed',
+                            'url': url
+                        })
+                        failed_count += 1
                 
                 except Exception as e:
                     self.logger.error(f"❌ Error memproses {url}: {str(e)}")
-                    failed_urls.append(url)
+                    
+                    # ✅ SAVE LANGSUNG
+                    self.save_results_with_url_tracking({
+                        'status': 'failed',
+                        'url': url
+                    })
+                    failed_count += 1
                 
-                # Browser cleanup
+                # Browser cleanup (tidak diubah)
                 try:
                     if current_template and self.should_cleanup_after_url(current_template):
                         self.perform_browser_cleanup(current_template)
                 except Exception as cleanup_error:
                     self.logger.warning(f"⚠️ Error dalam cleanup: {cleanup_error}")
-                # ✅ CLEANUP DISABLED - LOG ONLY
-
                 
                 # Delay antar URL
                 if i < len(urls):
@@ -1825,19 +1850,21 @@ class BacklinkBot:
                     self.logger.info(f"{G}{'─' *60}")
                     time.sleep(delay)
             
-            # Simpan hasil
-            self.save_results_with_url_tracking(success_urls, failed_urls, no_template_urls)
+            # ✅ BUAT SUMMARY di akhir
+            self.create_final_summary()
             
             # Log final
-            total_processed = len(success_urls) + len(failed_urls)
+            total_processed = success_count + failed_count
             if total_processed > 0:
-                success_rate = len(success_urls) / total_processed * 100
-                self.logger.info(f"🎯 Selesai! Berhasil: {G}{len(success_urls)}{W}/{G}{total_processed} {W}({G}{success_rate:.1f}{Y}%{W})")
+                success_rate = success_count / total_processed * 100
+                self.logger.info(f"🎯 Selesai! Berhasil: {G}{success_count}{W}/{G}{total_processed} {W}({G}{success_rate:.1f}{Y}%{W})")
             else:
                 self.logger.info(f"🎯 Selesai! Tidak ada URL yang bisa diproses")
             
-            if no_template_urls:
-                self.logger.info(f"⚠️ {len(no_template_urls)} URL perlu template baru")
+            if no_template_count > 0:
+                self.logger.info(f"⚠️ {no_template_count} URL perlu template baru")
+            
+            self.logger.info(f"💾 {G}Hasil tersimpan di: {self.results_dir}")
             
         except Exception as e:
             self.logger.error(f"❌ Error menjalankan bot: {str(e)}")
@@ -1845,85 +1872,144 @@ class BacklinkBot:
             if self.driver:
                 self.driver.quit()
 
-
-    def save_results_with_url_tracking(self, success_data: List[Dict], failed_urls: List[str], no_template_urls: List[str]):
-        """Simpan hasil dengan URL tracking detail"""
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        results_dir = os.path.join("results", timestamp)
-        os.makedirs(results_dir, exist_ok=True)
+    def save_results_with_url_tracking(self, url_data: dict):
+        """Simpan hasil dengan URL tracking detail - Incremental saving only"""
         
-        # File success dengan detail URL tracking
-        success_file = os.path.join(results_dir, f"success_{timestamp}.txt")
-        success_json_file = os.path.join(results_dir, f"success_detail_{timestamp}.json")
+        # ✅ SETUP SESSION FOLDER (jika belum ada)
+        if not hasattr(self, 'session_timestamp') or not self.session_timestamp:
+            self.session_timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.results_dir = os.path.join("results", self.session_timestamp)
+            os.makedirs(self.results_dir, exist_ok=True)
+            self.logger.info(f"💾 Session folder: {self.results_dir}")
         
-        with open(success_file, 'w', encoding='utf-8') as f:
-            for data in success_data:
-                f.write(f"{data['final_url']}\n")  # Simpan final URL
-        
-        # Simpan detail dalam JSON
-        with open(success_json_file, 'w', encoding='utf-8') as f:
-            json.dump(success_data, f, indent=2, ensure_ascii=False)
-        
-        self.logger.info(f"✅ {G}{len(success_data)} {W}URL berhasil disimpan ke: {Y}{success_file}")
-        self.logger.info(f"📊 {G}Detail tracking disimpan ke{W}: {Y}{success_json_file}")
-        
-        # File failed (sama seperti sebelumnya)
-        failed_file = os.path.join(results_dir, f"failed_{timestamp}.txt")
-        with open(failed_file, 'w', encoding='utf-8') as f:
-            for url in failed_urls:
-                f.write(f"{url}\n")
-            self.logger.info(f"❌ {R}{len(failed_urls)} {R}URL gagal disimpan ke{W}: {Y}{failed_file}")
-        
-        # File no template
-        no_template_file = os.path.join(results_dir, f"no_template_{timestamp}.txt")
-        with open(no_template_file, 'w', encoding='utf-8') as f:
-            for url in no_template_urls:
+        try:
+            status = url_data['status']
+            url = url_data['url']
+            
+            if status == "success":
+                success_file = os.path.join(self.results_dir, f"success_{self.session_timestamp}.txt")
+                success_json_file = os.path.join(self.results_dir, f"success_detail_{self.session_timestamp}.json")
+                
+                # Append ke success file
+                with open(success_file, 'a', encoding='utf-8') as f:
+                    final_url = url_data.get('final_url', url)
+                    f.write(f"{final_url}\n")
+                
+                # Update JSON file
+                existing_data = []
+                if os.path.exists(success_json_file):
+                    try:
+                        with open(success_json_file, 'r', encoding='utf-8') as f:
+                            existing_data = json.load(f)
+                    except:
+                        existing_data = []
+                
+                existing_data.append(url_data.get('detail', {}))
+                
+                with open(success_json_file, 'w', encoding='utf-8') as f:
+                    json.dump(existing_data, f, indent=2, ensure_ascii=False)
+                
+                self.logger.info(f"💾 ✅ URL berhasil tersimpan")
+                
+            elif status == "failed":
+                failed_file = os.path.join(self.results_dir, f"failed_{self.session_timestamp}.txt")
+                with open(failed_file, 'a', encoding='utf-8') as f:
+                    f.write(f"{url}\n")
+                self.logger.info(f"💾 ❌ URL gagal tersimpan")
+                
+            elif status == "no_template":
+                no_template_file = os.path.join(self.results_dir, f"no_template_{self.session_timestamp}.txt")
                 domain = urlparse(url).netloc.lower()
-                f.write(f"{url}  # Domain: {domain}\n")
-            self.logger.info(f"⚠️ {Y}{len(no_template_urls)} {Y}URL tanpa template disimpan ke{W}: {Y}{no_template_file}")
-        
-        # File summary
-        summary_file = os.path.join(results_dir, f"summary_{timestamp}.txt")
-        with open(summary_file, 'w', encoding='utf-8') as f:
-            f.write(f"# Summary Report - {datetime.datetime.now()}\n")
-            f.write(f"# ==========================================\n\n")
-            f.write(f"Total URL diproses: {len(success_data) + len(failed_urls) + len(no_template_urls)}\n")
-            f.write(f"✅ Berhasil: {len(success_data)}\n")
-            f.write(f"❌ Gagal: {len(failed_urls)}\n")
-            f.write(f"⚠️ Tanpa Template: {len(no_template_urls)}\n\n")
+                with open(no_template_file, 'a', encoding='utf-8') as f:
+                    f.write(f"{url}  # Domain: {domain}\n")
+                self.logger.info(f"💾 ⚠️ URL tanpa template tersimpan")
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error incremental save: {e}")
+
+    # ✅ TAMBAH METHOD BARU INI
+    def create_final_summary(self):
+        """Buat summary file di akhir proses"""
+        try:
+            if not hasattr(self, 'results_dir') or not self.results_dir:
+                return
+                
+            summary_file = os.path.join(self.results_dir, f"summary_{self.session_timestamp}.txt")
             
-            total_processed = len(success_data) + len(failed_urls)
-            if total_processed > 0:
-                success_rate = len(success_data) / total_processed * 100
-                f.write(f"Success Rate: {success_rate:.1f}%\n\n")
+            # Hitung statistik dari file yang sudah ada
+            success_count = 0
+            failed_count = 0
+            no_template_count = 0
             
-            # Domain yang perlu template baru
-            if no_template_urls:
-                f.write("Domain yang perlu template baru:\n")
-                domains = set()
-                for url in no_template_urls:
-                    domains.add(urlparse(url).netloc.lower())
-                for domain in sorted(domains):
-                    f.write(f"- {domain}\n")
-        
-        self.logger.info(f"📊 {W}Summary disimpan ke: {Y}{summary_file}")
-        
+            success_file = os.path.join(self.results_dir, f"success_{self.session_timestamp}.txt")
+            failed_file = os.path.join(self.results_dir, f"failed_{self.session_timestamp}.txt")
+            no_template_file = os.path.join(self.results_dir, f"no_template_{self.session_timestamp}.txt")
+            
+            # Count lines in each file
+            for file_path, counter in [(success_file, 'success'), (failed_file, 'failed'), (no_template_file, 'no_template')]:
+                if os.path.exists(file_path):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        count = sum(1 for line in f if line.strip())
+                        if counter == 'success':
+                            success_count = count
+                        elif counter == 'failed':
+                            failed_count = count
+                        elif counter == 'no_template':
+                            no_template_count = count
+            
+            # Buat summary
+            with open(summary_file, 'w', encoding='utf-8') as f:
+                f.write(f"# Real-time Summary Report - {datetime.datetime.now()}\n")
+                f.write(f"# ==========================================\n\n")
+                f.write(f"Total URL diproses: {success_count + failed_count + no_template_count}\n")
+                f.write(f"✅ Berhasil: {success_count}\n")
+                f.write(f"❌ Gagal: {failed_count}\n")
+                f.write(f"⚠️ Tanpa Template: {no_template_count}\n\n")
+                
+                total_processed = success_count + failed_count
+                if total_processed > 0:
+                    success_rate = success_count / total_processed * 100
+                    f.write(f"Success Rate: {success_rate:.1f}%\n\n")
+                
+                f.write(f"Mode: Real-time incremental saving\n")
+                f.write(f"Session: {self.session_timestamp}\n")
+                
+                # Domain yang perlu template baru
+                if no_template_count > 0:
+                    f.write("\nDomain yang perlu template baru:\n")
+                    if os.path.exists(no_template_file):
+                        domains = set()
+                        with open(no_template_file, 'r', encoding='utf-8') as f:
+                            for line in f:
+                                if '#' in line:
+                                    domain = line.split('#')[1].replace('Domain:', '').strip()
+                                    domains.add(domain)
+                        for domain in sorted(domains):
+                            f.write(f"- {domain}\n")
+            
+            self.logger.info(f"📊 Final summary disimpan: {summary_file}")
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error creating final summary: {e}")
+
+
+
 
 def load_urls_from_file(file_path: str) -> List[str]:
-    """Load URLs dari file"""
-    urls = []
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            for line in file:
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    urls.append(line)
-    except FileNotFoundError:
-        print(f"❌ File {file_path} tidak ditemukan")
-    except Exception as e:
-        print(f"❌ Error membaca file {file_path}: {e}")
-    
-    return urls
+        """Load URLs dari file"""
+        urls = []
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                for line in file:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        urls.append(line)
+        except FileNotFoundError:
+            print(f"❌ File {file_path} tidak ditemukan")
+        except Exception as e:
+            print(f"❌ Error membaca file {file_path}: {e}")
+        
+        return urls
 
 def main():
     """Main function"""
@@ -1965,7 +2051,7 @@ def main():
             print("  python main.py list <file>                               # Gunakan file URL custom dengan filter")
             print("  python main.py test <url>                                # Test satu URL saja")
             print("  python main.py --headless                                # Mode background tanpa tampilan browser")
-            print("  python main.py --gui                                     # Mode GUI (ada tampilan browser)")
+            print("  python main.py --gui                                     # Paksa mode GUI (ada tampilan browser)")
             print("  python main.py --no-resume                               # Load semua URLs tanpa filter")
             print("")
             print("Contoh:")
