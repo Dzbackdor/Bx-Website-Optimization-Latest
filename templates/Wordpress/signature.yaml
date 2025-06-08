@@ -1,0 +1,12 @@
+# Signature untuk website1
+signatures:
+  - "Best regards, {name}"
+  - "Thanks for sharing!"
+  - "Great content as always!"
+  - "Looking forward to more posts like this."
+
+# Backlink templates
+backlink_templates:
+  - "Check out my website: {website}"
+  - "Visit my blog at {website} for similar content"
+  - "More info available at {website}"

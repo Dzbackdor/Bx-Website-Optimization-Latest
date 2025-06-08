@@ -1,0 +1,175 @@
+auto_detection:
+  auto_learn: true
+  min_compatibility: 0.7
+  platform_indicators:
+  - meta_generator: Wix.com Website Builder
+    weight: 0.9
+  priority: 2
+  required_elements:
+  - body
+  - html
+cleanup:
+  clear_focus: true
+  close_modals: true
+  enabled: true
+  scroll_to_top: true
+comment_box_search:
+  selectors:
+    primary:
+    - '[data-hook*=''comment-box-placeholder-text'']'
+    - '[id*=''root-comment-box-start-'']'
+delays:
+  between_steps: 2.5
+  click_delay: 1.0
+  final_wait: 4
+  initial_wait: 2.5
+  input_delay: 0.5
+  retry_delay: 1.5
+description: Auto-Detection Template - Wix Sites
+detection_patterns:
+  wix_indicators:
+  - static.parastorage.com
+  - static.wixstatic.com
+  - www.wix.com
+  - wix-code
+  - wixSite
+  - wix-site
+  - _wixCIDX
+  - wix-public-data
+domains: []
+logging:
+  max_comment_length: 100
+  show_element_info: true
+  show_status_check: true
+  show_verification: true
+name: Wix
+popup_selectors:
+- .modal
+- .popup
+- '[class*=''modal'']'
+- '[class*=''popup'']'
+- '[data-hook=''cookie-consent-banner'']'
+- '[data-testid=''cookie-banner'']'
+- .wix-notifications
+- '[class*=''notification'']'
+selectors:
+  active_comment_box:
+    primary:
+    - p.tAaif.jkMRy.is-editor-empty
+    - p.tAaif.jkMRy
+    - p[class*='tAaif'][class*='jkMRy']
+    - p[class*='is-editor-empty']
+    - div[contenteditable='true']
+    - p[contenteditable='true']
+    - '[data-hook*=''comment'']'
+    - '[class*=''comment''][class*=''editor'']'
+  beautifulsoup:
+    alternative_classes:
+    - tAaif jkMRy
+    - tAaif
+    - jkMRy
+    - is-editor-empty
+    primary_class: tAaif jkMRy is-editor-empty
+    search_keywords:
+    - editor
+    - comment
+    - input
+    - text
+    - empty
+  comment_box:
+    alternative:
+    - p[class*='tAaif']
+    - p[class*='jkMRy']
+    - p[class*='is-editor-empty']
+    fallback:
+    - div[contenteditable='true']
+    - p[contenteditable='true']
+    - '[data-hook*=''comment'']'
+    - '[class*=''comment''][class*=''editor'']'
+    primary:
+    - p.tAaif.jkMRy.is-editor-empty
+    - p.tAaif.jkMRy
+    - p[class*='tAaif'][class*='jkMRy']
+  comment_box_pattern: '[id*=''root-comment-box-start-'']'
+  comment_box_xpath: //*[contains(@id, 'root-comment-box-start-')]
+  comment_field: textarea, input
+  comment_form: body
+  email_field: input
+  link_button:
+    primary:
+    - '[data-hook="text-button-link"]'
+  name_field: input
+  post_button:
+    primary:
+    - '[data-hook="primary-btn"]'
+    - button[data-hook="primary-btn"]
+  safe_click_areas:
+  - body
+  - main
+  - .content
+  - '#content'
+  save_button:
+    primary:
+    - '[data-hook="link-modal-save-button"]'
+  toggle_switch:
+    alternative:
+    - .toggle-switch
+    - input[type="checkbox"]
+    primary:
+    - '[data-hook="toggle-switch-input"]'
+  underline_button:
+    primary:
+    - '[data-hook="text-button-underline active"]'
+    - '[data-hook="text-button-underline"]'
+  url_input:
+    primary:
+    - div[data-hook="link-modal-url-input"] input[data-hook="wsr-input"]
+settings:
+  browser_cleanup:
+    delay_after_cleanup: 3
+    enabled: true
+    methods:
+      clear_browser_data: true
+      clear_cookies: true
+      logout_google: true
+      reset_browser_state: true
+    when: after_each_url
+  link_format: text
+  popup_cleanup_enabled: true
+  scroll_amount_max: 600
+  scroll_amount_min: 400
+  scroll_max_attempts: 15
+  wait_after_click: 2.0
+  wait_after_scroll: 1.5
+text_search:
+  placeholder_texts:
+  - write a comment
+  - add a comment
+  - your comment
+  - leave a comment
+  - comment here
+  - tulis komentar
+  - tambah komentar
+  relevant_keywords:
+  - editor
+  - comment
+  - input
+  - text
+  - empty
+timeouts:
+  click_wait: 5
+  element_wait: 8
+  input_wait: 5
+  link_process_wait: 5
+  submit_wait: 5
+validation:
+  allowed_protocols:
+  - http://
+  - https://
+  blocked_chars:
+  - <
+  - '>'
+  - '"'
+  max_comment_length: 1000
+  min_comment_length: 10
+version: '1.0'

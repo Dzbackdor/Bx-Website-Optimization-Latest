@@ -1,0 +1,56 @@
+# Konfigurasi utama aplikasi
+app:
+  name: "Backlink"
+  version: "2.0.0"
+  delay_between_comments: 3  # detik
+  max_retries: 3
+  timeout: 30
+  page_load_timeout: 30
+  element_wait_timeout: 15
+
+
+settings:
+typing:
+  human_like: true
+  speed_min: 0.05    # 50ms minimum
+  speed_max: 0.12    # 120ms maksimum
+
+
+# Data komentar default
+comment_data:
+  name: "John Doe" # ✅ Wordpress setting username
+  email: "john.doe@example.com" # ✅ Wordpress setting email
+  website: "https://yourwebsite.com" # ✅ Wordpress setting website
+  comment_file: "komen.txt"  # ✅ list komentar
+  
+
+# Pengaturan cache
+cache:
+  enabled: true
+  file: "cache/template_cache.json"
+  element_cache_file: "cache/element_cache.json"
+  ttl: 3600
+  element_ttl: 0
+
+  # Pilih salah satu sesuai kebutuhan:
+  # element_ttl: 7200    # 2 jam (default)
+  # element_ttl: 21600   # 6 jam
+  # element_ttl: 43200   # 12 jam
+  # element_ttl: 86400   # 24 jam (1 hari)
+  # element_ttl: 259200  # 3 hari
+  # element_ttl: 604800  # 7 hari (1 minggu)
+  # element_ttl: 2592000 # 30 hari (1 bulan)
+  # element_ttl: 0       # Tidak pernah expired (permanent cache)
+
+# Pengaturan logging
+logging:
+  disabled: true    # ✅ true = mematikan file logging
+  level: "INFO"
+  file: "bot.log"
+
+# Pengaturan browser
+browser:
+  headless: false
+  window_size: "1280,720"
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  page_load_strategy: "normal"  # TAMBAH INI: normal, eager, none

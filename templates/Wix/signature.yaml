@@ -1,0 +1,21 @@
+signatures:
+  casual:
+    - "Thanks for sharing!"
+    - "Great article!"
+    - "Very informative post."
+  
+  professional:
+    - "Thank you for this insightful article."
+    - "This is very helpful information."
+    - "Excellent analysis on this topic."
+  
+  question:
+    - "What do you think about this approach?"
+    - "Have you tried this method before?"
+    - "Any additional tips on this?"
+
+# Backlink templates
+backlink_templates:
+  - "You can find more resources at {website}"
+  - "I've written about this topic on my site: {website}"
+  - "For additional information, visit {website}"

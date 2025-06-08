@@ -1,0 +1,75 @@
+name: WordPress Generic Template
+version: 1.0.0
+domains: []
+detection_patterns:
+  meta_generator_keywords:
+  - WordPress
+  - Wordpress
+  - WP
+  wordpress_indicators:
+  - '#commentform'
+  - input[name="author"]
+  - input[name="email"]
+  - textarea[name="comment"]
+  - .wp-comment-form
+  - '#wp-comment-form'
+  - form[id*="comment"]
+  - form[class*="comment"]
+  - .comment-form
+  - '#respond'
+settings:
+  typing: null
+  human_like: true
+  speed_min: 0.08
+  speed_max: 0.15
+  requires_login: false
+  comment_moderation: true
+  max_comment_length: 500
+  auto_learn: true
+  link_format: auto
+  browser_cleanup: null
+  enabled: false
+  when: never
+show_comment_button:
+  selectors:
+  - .write-comment-btn
+  - .write-comment-btn-under
+  - '#write-comment-btn'
+  - .show-comment-form
+  - .comment-reply-link
+  - .add-comment-btn
+  - '#comments > a'
+  - a[href="#respond"]
+  - .smbutton
+  - a.smbutton
+  - a[href="#respond"].smbutton
+selectors:
+  comment_form: '#commentform'
+  name_field: input[name='author']
+  email_field: input[name='email']
+  website_field: input[name='url']
+  comment_field: textarea[name='comment']
+  submit_button:
+  - input[type='submit']
+  - button[type='submit']
+  - input[name='submit']
+  - button[name='submit']
+  - '#submit'
+  - .submit-btn
+privacy_checkbox:
+  selectors:
+  - input[type="checkbox"][id*="cl_check"]
+  - input[type="checkbox"][id*="wp-comment-cookies-consent"]
+  - input[type="checkbox"][name*="cl_check"]
+  - input[type="checkbox"][id*="privacy"]
+  - input[type="checkbox"][name*="privacy"]
+  - input[type="checkbox"][id*="gdpr"]
+  - input[type="checkbox"][name*="gdpr"]
+  - input[type="checkbox"][id*="consent"]
+  - input[type="checkbox"][name*="consent"]
+  - input[type="checkbox"][class*="privacy"]
+  - input[type="checkbox"][class*="gdpr"]
+  - input[type="checkbox"][class*="consent"]
+  - input[type="checkbox"][id*="terms"]
+  - input[type="checkbox"][name*="terms"]
+  - input[type="checkbox"][class*="terms"]
