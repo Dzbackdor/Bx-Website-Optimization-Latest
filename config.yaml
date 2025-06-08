@@ -8,12 +8,26 @@ app:
   page_load_timeout: 30
   element_wait_timeout: 15
 
-
+# normal
 settings:
 typing:
   human_like: true
   speed_min: 0.05    # 50ms minimum
   speed_max: 0.12    # 120ms maksimum
+
+# fast
+# settings:
+# typing:
+#   human_like: true
+#   speed_min: 0.01
+#   speed_max: 0.03
+
+# ultrafast
+# settings:
+# typing:
+#   human_like: true
+#   speed_min: 0.01
+#   speed_max: 0.01 
 
 
 # Data komentar default
