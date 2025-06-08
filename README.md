@@ -5,7 +5,7 @@
 
 Bot otomatis untuk mengirim komentar dengan backlink ke berbagai platform website menggunakan sistem template yang cerdas dan adaptive dengan machine learning capabilities. Serta memiliki kemampuan untuk melewati Protection Security pada website.
 
-<img src="/backlink.png" width="600" alt="Bx-Website-Optimization-Latest">
+<img src="/backlink.jpg" width="600" alt="Bx-Website-Optimization-Latest">
 
 ## ✨ Fitur Utama
 
